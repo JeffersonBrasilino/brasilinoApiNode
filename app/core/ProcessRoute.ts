@@ -1,5 +1,5 @@
 import express from "express";
-import mainExports from '../src/ExportModules';
+import mainExports from '../src/app/ExportModules';
 
 class ProcessRoute {
     public router;
