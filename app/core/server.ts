@@ -12,9 +12,7 @@ export class Server {
     }
 
     constructor(){
-
         dotenv.config();
-
         this.port = process.env.PORT;
         this.app = express();
         this.app.use(bodyparser.urlencoded({ extended: false }));

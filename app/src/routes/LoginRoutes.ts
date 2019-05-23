@@ -1,5 +1,4 @@
- export let loginRoutes = {
-      
+ export let Login = {
     "":{
          "method": "get",
          "auth": 0,

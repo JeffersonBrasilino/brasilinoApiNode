@@ -7,13 +7,17 @@
 
     documentacao do SEQUELIZE: http://docs.sequelizejs.com
  */
-import { Model, DataTypes } from "sequelize";
 import Db from '../../core/conectionDatabase';
-import GrupoUsuariosUsuario from './GupoUsuariosUsuario';
+import { Model, DataTypes } from "sequelize";
 /*
   INICIO DA CLASSE DE MODELO
  */
-class UsuariosModel extends Model {}
+class UsuariosModel extends Model<UsuariosModel> {
+  
+  teste = ()=>{
+    return 'ok';
+  }
+}
 /*
   INICIA O MODELO COM A FUNCAO ESTATICA DO MODEL: init(), CONTENDO OS CAMPOS E TIPOS DA TABELA NO BANCO DE DADOS 
  */
@@ -27,7 +31,7 @@ UsuariosModel.init({
     type: new DataTypes.STRING()
   }
 }, {
-   /*parametro name na configuraçao do sequelize, ele e responsavel de nomear a chave do json de retorno de consulta/json de persistencia */
+    /*parametro name na configuraçao do sequelize, ele e responsavel de nomear a chave do json de retorno de consulta/json de persistencia */
     name: { singular: 'UsuariosModel', plural: 'UsuariosModel' },
     /*undescored: muda o tipo de padrao de nomes de colunas no bando de CamelCase(default) para snake_case */
     underscored: true,
@@ -38,15 +42,7 @@ UsuariosModel.init({
   });
 
 /* mapeamento de relacoes entre tabelas */
-let grupoUsuariosAssociation = UsuariosModel.hasMany(GrupoUsuariosUsuario, { foreignKey: 'usuarios_id' });
-GrupoUsuariosUsuario.belongsTo(UsuariosModel, { foreignKey: 'usuarios_id' });
+// UsuariosModel.hasMany(GrupoUsuariosUsuario, { foreignKey: 'usuarios_id' });
+// GrupoUsuariosUsuario.belongsTo(UsuariosModel, { foreignKey: 'usuarios_id' });
 
-/*CLASSE PUBLICA COM AS INSTANCIAS DA TABELA DE MODELO */
-class Usuarios {
-  static model = UsuariosModel;
-  static asociation = grupoUsuariosAssociation;
-  static includes = [];
-
-  private db = Db;
-}
-export default Usuarios; 
+export default UsuariosModel; 
