@@ -16,8 +16,10 @@ export class Server {
         this.port = process.env.PORT;
         this.app = express();
         this.app.use(bodyparser.urlencoded({ extended: false }));
-        this.app.use(bodyparser.json())
-        this.app.use(ProcessRoute);
+        this.app.use(bodyparser.json());
+        
+        this.app.use(ProcessRoute.openRouter);
+        this.app.use(ProcessRoute.authRouter);
     }
 
     public startServer(){
