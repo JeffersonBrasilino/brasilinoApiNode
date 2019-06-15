@@ -1,13 +1,11 @@
-import UsuariosModel from '../models/UsuariosModel';
+import * as models from '../models/ExportModels';
 import md5 from 'md5';
-import { sign } from 'jsonwebtoken';
-
 export default class AuthService {
-    createUser = (data): Promise<UsuariosModel | boolean> => {
+    createUser = (data): Promise<models.UsuariosModel | any> => {
         data.senha = md5(data.senha);
-        return UsuariosModel.create(data, {
+        return models.UsuariosModel.create(data, {
             include: [
-                { association: UsuariosModel.grupoUsuariosUsuario }
+                { model: models.GrupoUsuariosUsuarioModel }
             ]
         }).then((res) => {
             return res.id
@@ -16,7 +14,16 @@ export default class AuthService {
         })
     }
 
-    signIn = (user, password) => {
-        console.log(process.env.KEY_TOKEN);
+    signIn = async (user, password) => {
+        let pass = md5(password);
+        return await models.UsuariosModel.findOne({
+            include:[
+                {
+                    model:models.GrupoUsuariosUsuarioModel, 
+                    include:[
+                        {model: models.GrupoUsuariosModel}
+                    ]
+                }]   
+        });
     }
 }

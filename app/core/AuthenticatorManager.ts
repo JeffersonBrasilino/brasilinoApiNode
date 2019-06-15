@@ -1,33 +1,36 @@
 import { sign, verify } from 'jsonwebtoken';
-export default class RouterAuthenticator {
-    constructor(req, res, next) {
-        //this.generate();
-        if (!this.authenticate(req)) {
-            res.status(401).end();
-        } else {
-            next();
-        }
-    }
+export default class AuthenticatorManager {
 
-    private authenticate(req): boolean {
+    authenticate = (req, res, next) => {
         let retorno;
         try {
             if (req.get('Authorization')) {
                 let tk = req.get('Authorization').replace(/[Bb]earer /, '');
                 let credencials = verify(tk, process.env.KEY_TOKEN);
 
-               retorno = this.chekCredencials(credencials, req);
+                retorno = this.chekCredencials(credencials, req);
             } else {
                 retorno = false;
             }
+
         } catch (err) {
             retorno = false;
         }
-        return retorno;
+
+        if (retorno == false)
+            res.status(401).end();
+        else
+            next();
+    }
+
+    generateCredencials = (data) => {
+        let configToken = {
+            data: data
+        }
+        return sign(configToken, process.env.KEY_TOKEN);
     }
 
     private chekCredencials(credencials, req) {
-        //if(credencials.permissions[req.path])
         let retorno = true;
         if (!credencials.permissions[req.path])
             retorno = false;
@@ -35,9 +38,5 @@ export default class RouterAuthenticator {
             retorno = false;
 
         return retorno
-    }
-
-    private generate() {
-        console.log(sign({ "user": "jefferson brassilino", "permissions": { "/auth/signup": ["POST", "GET"] } }, process.env.KEY_TOKEN));
     }
 }
