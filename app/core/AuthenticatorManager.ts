@@ -8,7 +8,7 @@ export default class AuthenticatorManager {
                 let tk = req.get('Authorization').replace(/[Bb]earer /, '');
                 let credencials = verify(tk, process.env.KEY_TOKEN);
 
-                retorno = this.chekCredencials(credencials, req);
+                retorno = this.chekCredencials(credencials.data, req);
             } else {
                 retorno = false;
             }

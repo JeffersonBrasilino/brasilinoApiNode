@@ -1,5 +1,7 @@
 import * as models from '../models/ExportModels';
 import md5 from 'md5';
+import { Op } from 'sequelize';
+import AuthenticatorManager from '../../core/AuthenticatorManager';
 export default class AuthService {
     createUser = (data): Promise<models.UsuariosModel | any> => {
         data.senha = md5(data.senha);
@@ -14,16 +16,47 @@ export default class AuthService {
         })
     }
 
-    signIn = async (user, password) => {
+    signIn = (user, password) => {
         let pass = md5(password);
-        return await models.UsuariosModel.findOne({
-            include:[
-                {
-                    model:models.GrupoUsuariosUsuarioModel, 
-                    include:[
-                        {model: models.GrupoUsuariosModel}
+        return new Promise(async (res,rej)=>{
+            try{
+                let userData = await models.UsuariosModel.findOne({
+                    attributes: ['id'],
+                    where: { login: user, senha: pass, status: 1 },
+                    include: [
+                        {
+                            model: models.GrupoUsuariosUsuarioModel,
+                            attributes: ['grupo_usuario_id'],
+                            where: { status: 1 }
+                        }
                     ]
-                }]   
+                });
+                if (userData) {
+                    let objectToken = {'userId':userData.id};        
+                    let permissions = await models.RotasApiModel.findAll({
+                        where: { status: 1 },
+                        include: [
+                            { model: models.GrupoUsuariosPermissoesModel, where: { grupo_usuario_id: 3 } }
+                        ]
+                    });
+        
+                    let routesAllowUser = {};
+                    for (const pm of permissions) {
+                        routesAllowUser[pm.rota] = <any>[]
+                        pm.GrupoUsuariosPermissoes.forEach((val, key) => {
+                            routesAllowUser[pm.rota].push(val.permissao);
+                        });
+                    }
+        
+                    objectToken['permissions'] = routesAllowUser;
+                    res({token:new AuthenticatorManager().generateCredencials(objectToken)});
+        
+                } else {
+                   res({token:'null'});
+                }
+            }catch(error){
+                rej(400);
+            }
         });
     }
 }
