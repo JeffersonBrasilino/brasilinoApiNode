@@ -2,7 +2,7 @@ import { sign, verify } from 'jsonwebtoken';
 export default class AuthenticatorManager {
 
     authenticate = (req, res, next) => {
-        let retorno;
+        let retorno = 200;
         try {
             if (req.get('Authorization')) {
                 let tk = req.get('Authorization').replace(/[Bb]earer /, '');
@@ -10,15 +10,15 @@ export default class AuthenticatorManager {
 
                 retorno = this.chekCredencials(credencials.data, req);
             } else {
-                retorno = false;
+                retorno = 401;
             }
 
         } catch (err) {
-            retorno = false;
+            retorno = 401;
         }
 
-        if (retorno == false)
-            res.status(401).end();
+        if (retorno != 200)
+            res.send(retorno);
         else
             next();
     }
@@ -31,11 +31,9 @@ export default class AuthenticatorManager {
     }
 
     private chekCredencials(credencials, req) {
-        let retorno = true;
-        if (!credencials.permissions[req.path])
-            retorno = false;
-        else if (!credencials.permissions[req.path].find(k => k == req.method))
-            retorno = false;
+        let retorno = 200;
+        if (!credencials.permissions[req.path] || !credencials.permissions[req.path].find(k => k == req.method))
+            retorno = 403;
 
         return retorno
     }
