@@ -55,6 +55,7 @@ export default class AuthService {
                 retorno = { token: 'null' };
             }
         } catch (error) {
+            console.log(error); 
             retorno = 400; //400 - bad request;
         }
         return retorno;
