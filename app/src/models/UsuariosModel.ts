@@ -4,6 +4,7 @@ import Db from '../../core/conectionDatabase';
 export class UsuariosModel extends Model<UsuariosModel>{
     //add especifcs methods here...
 }
+
 UsuariosModel.init(
     {
         id: { type: new DataTypes.INTEGER, autoIncrement: true, primaryKey: true },

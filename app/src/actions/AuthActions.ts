@@ -16,7 +16,8 @@ export class AuthActions {
     }
 
     signup = async (req, res) => {
-        let result = await this.authService.createUser(req.body);
-        res.json(result);
+        console.log(req.params);
+        // let result = await this.authService.createUser(req.body);
+        // res.json(result);
     }
 }
