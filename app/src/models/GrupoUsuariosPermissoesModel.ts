@@ -16,7 +16,7 @@ GrupoUsuariosPermissoesModel.init(
         grupo_usuario_id: { type: new DataTypes.INTEGER, },
     },
     {
-        sequelize: Db,
+        sequelize: Db.conect(),
         tableName: 'grupo_usuarios_permissoes',
         underscored: true,
         name: {

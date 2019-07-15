@@ -14,7 +14,7 @@ RotasApiModel.init(
         status: { type: new DataTypes.SMALLINT, },
     },
     {
-        sequelize: Db,
+        sequelize: Db.conect(),
         tableName: 'rotas_api',
         underscored: true,
         name: {

@@ -13,7 +13,7 @@ GrupoUsuariosModel.init(
         status: { type: new DataTypes.SMALLINT, },
     },
     {
-        sequelize: Db,
+        sequelize: Db.conect(),
         tableName: 'grupo_usuarios',
         underscored: true,
         name: {
