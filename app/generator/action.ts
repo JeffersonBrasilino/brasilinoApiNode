@@ -26,7 +26,7 @@ class GeneratorAction {
     createRoutes = (name) =>{
         console.log('gerando rotas...');
         let actionName = name + "Routes";
-        let routeStr = "export let " + name + ' = {\r\n "":{"method":"get","action":"index","auth":0}\r\n}';
+        let routeStr = "export let " + name + ' = {\r\n "":{"method":["GET"],"action":"index","auth":0}\r\n}';
         writeFileSync('./src/routes/' + actionName + '.ts', routeStr);
         this.registerRoutes(name);
     }

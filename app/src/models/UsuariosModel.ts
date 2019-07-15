@@ -18,7 +18,7 @@ UsuariosModel.init(
         status: { type: new DataTypes.SMALLINT, },
     },
     {
-        sequelize: Db,
+        sequelize: Db.conect(),
         tableName: 'usuarios',
         underscored: true,
         name: {
