@@ -56,7 +56,12 @@ class ProcessRoute {
 
     //função para ajustar as rotas com parametros;
     private normalizeRoute = (urlActive, routes) => {
-        if (routes instanceof Array == false) routes = Object.keys(routes);
+
+        if (routes && routes instanceof Array == false)
+            routes = Object.keys(routes);
+        else
+            routes = [];
+
         let urlStr = '/' + urlActive.join('/');
         let finalRoute;
         if (routes.indexOf(urlStr) == -1) {//caso não exista a rota igual
