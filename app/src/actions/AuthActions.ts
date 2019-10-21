@@ -12,7 +12,12 @@ export class AuthActions {
 
     signIn = async (req, res) => {
        let result = await this.authService.signIn(req.body.user, req.body.password);
-       res.send(result);
+
+       //funcao status ficou deprecated para status(number) novo metodo...
+       if(typeof result == "number")
+           res.sendStatus(result);
+       else
+           res.send(result);
     }
 
     signup = async (req, res) => {

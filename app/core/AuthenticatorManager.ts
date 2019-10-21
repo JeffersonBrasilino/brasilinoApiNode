@@ -18,7 +18,7 @@ export default class AuthenticatorManager {
         }
 
         if (retorno != 200)
-            res.status(retorno).end();
+            res.sendStatus(retorno).end();
         else
             next();
     }

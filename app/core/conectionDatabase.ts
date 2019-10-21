@@ -12,11 +12,11 @@ class ConectionDataBase {
 
     conect = (): Sequelize => {
         dotenv.config();
-        let schemaSelected = String(process.env.DB_HOST_DEV);
+        let schemaSelected = String(process.env.DB_HOST_DEV);//nome da conexao do arquivo config/database.json no arquivo .env
         try {
             this.conection = new Sequelize(Object(this.databases[schemaSelected]));
         } catch (err) {
-            console.log('erro ao conectar com o banco de dados');
+            console.log('erro ao conectar com o banco de dados verificar config/database.json ERRO >>>> '+err);
         }
 
         return this.conection;
@@ -55,7 +55,7 @@ class ConectionDataBase {
             .then(() => {
                 console.log('conexão com o banco bem sucedida.');
             }).catch((err) => {
-            console.error('conexão falhou', err);
+            console.error('conexão falhou '+ err);
         });
     }
 }

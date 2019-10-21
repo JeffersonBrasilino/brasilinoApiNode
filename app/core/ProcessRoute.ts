@@ -49,7 +49,7 @@ class ProcessRoute {
         }
 
         if (codeError != 0)
-            res.status(codeError).end();
+            res.sendStatus(codeError).end();
         else
             next();
     };
