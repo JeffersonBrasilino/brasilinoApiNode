@@ -1,22 +1,21 @@
 import * as models from '../models/ExportModels';
 import md5 from 'md5';
 import AuthenticatorManager from '../../core/AuthenticatorManager';
+import DataValidator from "../../core/DataValidator";
 
 export default class AuthService {
 
     createUser = async (data) => {
         let retorno;
         const rules = {
-            nome: {required: true},
+            nome: {required: true, minLength: 100},
             email: {required: true},
             login: {required: true},
             senha: {required: true}
         };
-        let validate = this.validateFields(rules, data);
-
-        if (validate == false) {
-            retorno = {status: 400, data: {}};
-
+        let validate = new DataValidator().validateGroupData(rules, data);
+        if (validate.valid == false) {
+            retorno = {status: 400, data: validate.errors};
         } else {
             data.senha = md5(data.senha);
             await models.UsuariosModel.create(data, {
@@ -29,8 +28,6 @@ export default class AuthService {
                 retorno = {status: 500, data: {}};
             });
         }
-
-
         return retorno;
     };
 
