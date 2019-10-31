@@ -1,5 +1,5 @@
 node_modules
-.env
+app/.env
 .sequelizerc
 .idea
-/app/config/databases.ts
+app/config/*

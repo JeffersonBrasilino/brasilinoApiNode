@@ -1,20 +1,38 @@
 import * as models from '../models/ExportModels';
 import md5 from 'md5';
-import { Op } from 'sequelize';
 import AuthenticatorManager from '../../core/AuthenticatorManager';
+
 export default class AuthService {
-    createUser = (data): Promise<models.UsuariosModel | any> => {
-        data.senha = md5(data.senha);
-        return models.UsuariosModel.create(data, {
-            include: [
-                { model: models.GrupoUsuariosUsuarioModel }
-            ]
-        }).then((res) => {
-            return res.id
-        }).catch((err) => {
-            return false
-        })
-    }
+
+    createUser = async (data) => {
+        let retorno;
+        const rules = {
+            nome: {required: true},
+            email: {required: true},
+            login: {required: true},
+            senha: {required: true}
+        };
+        let validate = this.validateFields(rules, data);
+
+        if (validate == false) {
+            retorno = {status: 400, data: {}};
+
+        } else {
+            data.senha = md5(data.senha);
+            await models.UsuariosModel.create(data, {
+                include: [
+                    {model: models.GrupoUsuariosUsuarioModel}
+                ]
+            }).then((res) => {
+                retorno = {status: 201, data: {id: res.id}};
+            }).catch((err) => {
+                retorno = {status: 500, data: {}};
+            });
+        }
+
+
+        return retorno;
+    };
 
     signIn = async (user, password) => {
         let retorno;
@@ -22,21 +40,21 @@ export default class AuthService {
             let pass = md5(password);
             let userData = await models.UsuariosModel.findOne({
                 attributes: ['id'],
-                where: { login: user, senha: pass, status: 1 },
+                where: {login: user, senha: pass, status: 1},
                 include: [
                     {
                         model: models.GrupoUsuariosUsuarioModel,
                         attributes: ['grupo_usuario_id'],
-                        where: { status: 1 }
+                        where: {status: 1}
                     }
                 ]
             });
             if (userData) {
-                let objectToken = { 'userId': userData.id };
+                let objectToken = {'userId': userData.id};
                 let permissions = await models.RotasApiModel.findAll({
-                    where: { status: 1 },
+                    where: {status: 1},
                     include: [
-                        { model: models.GrupoUsuariosPermissoesModel, where: { grupo_usuario_id: 3 } }
+                        {model: models.GrupoUsuariosPermissoesModel, where: {grupo_usuario_id: 3}}
                     ]
                 });
 
@@ -49,14 +67,27 @@ export default class AuthService {
                 }
 
                 objectToken['permissions'] = routesAllowUser;
-                retorno = { token: new AuthenticatorManager().generateCredencials(objectToken) };
+                retorno = {token: new AuthenticatorManager().generateCredencials(objectToken)};
 
             } else {
-                retorno = { token: 'null' };
+                retorno = {token: 'null'};
             }
         } catch (error) {
-            console.log(error); 
             retorno = 400; //400 - bad request;
+        }
+        return retorno;
+    }
+
+    //TODO fazer validacao em um arquivo separado para servir para outras requisicoes... NOWWWW
+    private validateFields(rules, data) {
+        let retorno = true;
+        for (let rule in rules) {
+            let field = data[rule];
+            if (rules[rule].required == true) {
+                if (field == undefined || field == {} || field == [] || field == '' || field == null) {
+                    retorno = false;
+                }
+            }
         }
         return retorno;
     }

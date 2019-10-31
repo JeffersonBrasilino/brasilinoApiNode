@@ -1,7 +1,9 @@
 import AuthService from '../services/AuthService';
+
 export class AuthActions {
 
     private authService: AuthService
+
     constructor() {
         this.authService = new AuthService();
     }
@@ -11,18 +13,16 @@ export class AuthActions {
     }
 
     signIn = async (req, res) => {
-       let result = await this.authService.signIn(req.body.user, req.body.password);
+        let result = await this.authService.signIn(req.body.user, req.body.password);
 
-       //funcao status ficou deprecated para status(number) novo metodo...
-       if(typeof result == "number")
-           res.sendStatus(result);
-       else
-           res.send(result);
+        if (typeof result == "number")
+            res.status(result).end();
+        else
+            res.status(200).send(result);
     }
 
     signup = async (req, res) => {
-        console.log(req.params);
-        // let result = await this.authService.createUser(req.body);
-        // res.json(result);
+        let retorno = await this.authService.createUser(req.body);
+        res.status(retorno.status).send(retorno.data);
     }
 }
