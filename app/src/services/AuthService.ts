@@ -84,5 +84,31 @@ export default class AuthService {
             retorno = 400; //400 - bad request;
         }
         return retorno;
+    };
+
+    checkEmail = async (email: string) => {
+        let retorno;
+        try {
+            if (email == undefined) {
+                retorno = {code: 400};
+            } else {
+                let validate = new DataValidator().email(email);
+                if(validate == null){
+                    const verifyEmail = await models.UsuariosModel.findOne({
+                        attributes: ['id'],
+                        where: {email: email}
+                    });
+                    if(verifyEmail)
+                        retorno = {code: 200, data: {email: true}};
+                    else
+                        retorno = {code: 200, data: {email: false}};
+                }else{
+                    retorno = {code: 200, data: {email: validate}};
+                }
+            }
+        } catch (e) {
+            retorno = {code: 500, data: {}}; //server error;
+        }
+        return retorno;
     }
 }

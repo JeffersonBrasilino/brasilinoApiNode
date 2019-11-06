@@ -25,4 +25,10 @@ export class AuthActions {
         let retorno = await this.authService.createUser(req.body);
         res.status(retorno.status).send(retorno.data);
     }
+
+    checkEmail = async (req, res) => {
+        let retorno = await this.authService.checkEmail(req.query.email);
+        res.status(retorno.code).send(retorno.data);
+
+    }
 }
