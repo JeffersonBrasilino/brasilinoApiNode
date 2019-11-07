@@ -99,9 +99,9 @@ export default class AuthService {
                         where: {email: email}
                     });
                     if(verifyEmail)
-                        retorno = {code: 200, data: {email: true}};
+                        retorno = {code: 200, data: {hasEmail: true}};
                     else
-                        retorno = {code: 200, data: {email: false}};
+                        retorno = {code: 200, data: {hasEmail: false}};
                 }else{
                     retorno = {code: 200, data: {email: validate}};
                 }
