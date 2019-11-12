@@ -2,7 +2,7 @@ import AuthService from '../services/AuthService';
 
 export class AuthActions {
 
-    private authService: AuthService
+    private authService: AuthService;
 
     constructor() {
         this.authService = new AuthService();
