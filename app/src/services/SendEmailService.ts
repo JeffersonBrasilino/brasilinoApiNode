@@ -2,8 +2,8 @@ import SendEmail from "../../core/SendEmail";
 
 export default class SendEmailService {
 
-    sendEmail = () => {
+    async sendEmail() {
         const a = new SendEmail();
-        //a.sendEmail();
+        await a.sendEmail(['jefferson.wendhel@gmail.com'],'teste','ushdiushoiausfhaodshufasoiuh');
     }
 }

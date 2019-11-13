@@ -5,14 +5,23 @@ export default class SendEmail {
     private transport;
 
     constructor() {
-        console.log(process.env);
-        /*if(smtpConfigs)
-            this.transport = nodemailer.createTransport(smtpConfigs);
-        else
-            throw Error('config de email inexistente.');*/
+        const config = process.env;
+        this.transport = nodemailer.createTransport({
+            host: config.SMTP_HOST,
+            port: Number(config.SMTP_PORT),
+            secure: true,
+            auth: {
+                user: config.SMTP_USER,
+                pass: config.SMTP_PASS
+            }
+        });
+        this.transport.verify((err, suc) => {
+            if (err)
+                throw Error('configuracao do SMTP incorreta ' + err);
+        });
     }
 
-    check() {
+    check(): void {
         this.transport.verify((err, suc) => {
             if (err)
                 console.log(err);
@@ -21,16 +30,13 @@ export default class SendEmail {
         })
     }
 
-    sendEmail() {
-        this.transport.sendMail({
-            from:'"jw solucoes" <jwinfooslucoes@gmail.com>',
-            to: "jefferson.wendhel@gmail.com",
-            subject: "teste de envio de email",
-            html: '<b>se voce está lendo isso é pq deu certo caroi</b>'
-        }).then((suc) => {
-            console.log('success>>> ', suc);
-        }).catch(err => {
-            console.log('err>>> ', err)
+    sendEmail(emails: Array<string>, subject: String, content: String) {
+        let emailsStr = emails.join(',');
+        return this.transport.sendMail({
+            from: process.env.SMTP_USER,
+            to: emailsStr,
+            subject: subject,
+            html: content
         });
     }
 }
