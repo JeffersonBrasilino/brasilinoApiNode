@@ -1,12 +1,15 @@
 import * as nodemailer from 'nodemailer';
-import {smtpConfigs} from "../config/SmtpConfigs";
 
 export default class SendEmail {
 
     private transport;
 
     constructor() {
-        this.transport = nodemailer.createTransport(smtpConfigs);
+        console.log(process.env);
+        /*if(smtpConfigs)
+            this.transport = nodemailer.createTransport(smtpConfigs);
+        else
+            throw Error('config de email inexistente.');*/
     }
 
     check() {
@@ -20,6 +23,7 @@ export default class SendEmail {
 
     sendEmail() {
         this.transport.sendMail({
+            from:'"jw solucoes" <jwinfooslucoes@gmail.com>',
             to: "jefferson.wendhel@gmail.com",
             subject: "teste de envio de email",
             html: '<b>se voce está lendo isso é pq deu certo caroi</b>'
