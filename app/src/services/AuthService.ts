@@ -30,7 +30,7 @@ export default class AuthService {
                         {model: models.GrupoUsuariosUsuarioModel}
                     ]
                 }).then((res) => {
-                    retorno = {status: 201, data: {id: res.id}};
+                    retorno = {status: 201, data: {userId: new AuthenticatorManager().generateCredencials({userId:res.id})}};
                 }).catch((err) => {
                     retorno = {status: 500, data: {}};
                 });
@@ -68,7 +68,7 @@ export default class AuthService {
 
                 let routesAllowUser = {};
                 for (const pm of permissions) {
-                    routesAllowUser[pm.rota] = <any>[]
+                    routesAllowUser[pm.rota] = <any>[];
                     pm.GrupoUsuariosPermissoes.forEach((val, key) => {
                         routesAllowUser[pm.rota].push(val.permissao);
                     });

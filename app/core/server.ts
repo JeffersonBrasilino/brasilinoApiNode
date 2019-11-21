@@ -20,8 +20,7 @@ export class Server {
         this.app.use(cors());
         this.app.use(bodyparser.json());
         
-        this.app.use(ProcessRoute.openRouter);
-        this.app.use(ProcessRoute.authRouter);
+        this.app.use(ProcessRoute.router);
     }
 
     public startServer(){

@@ -4,12 +4,12 @@ import * as routes from '../src/routes/ExportRoutes';
 import AuthenticatorManager from './AuthenticatorManager';
 
 class ProcessRoute {
-    public openRouter = express.Router();
+    public router = express.Router();
     public authRouter = express.Router();
 
     constructor() {
-        this.openRouter.use(this.processRoute);
-        this.authRouter.use(new AuthenticatorManager().authenticate, this.processRoute);
+        this.router.use(this.processRoute);
+        //this.authRouter.use(new AuthenticatorManager().authenticate, this.processRoute);
     }
 
     processRoute = (req, res, next) => {
@@ -22,7 +22,7 @@ class ProcessRoute {
             let configRoute;
             url.splice(0, 1); //retira o primeiro item do array, pois ele e o arquivo de origem das rotas
             let subRoute = this.normalizeRoute(url, routes[mainRoute]);
-            if (!routes[mainRoute] || !subRoute) {
+            if (!routes[mainRoute] || !routes[mainRoute][subRoute]) {
                 codeError = 404;
             } else {
                 configRoute = routes[mainRoute][subRoute];
@@ -36,11 +36,11 @@ class ProcessRoute {
                 let method = req.method.toLowerCase();
                 let actionName = mainRoute + 'Actions';
                 let action = actions[actionName];
-
-                if (!configRoute.auth)
-                    this.openRouter[method]('/' + mainRoute + subRoute, new action()[configRoute.action]);
-                else
-                    this.authRouter[method]('/' + subRoute + subRoute, new action()[configRoute.action]);
+                if (configRoute.auth == 0 || configRoute.auth == false) {
+                    this.router[method]('/' + mainRoute + subRoute, new action()[configRoute.action]);
+                } else {
+                    this.router[method]('/' + mainRoute + subRoute,new AuthenticatorManager().authenticate, new action()[configRoute.action]);
+                }
 
             }
         } catch (err) {
@@ -49,7 +49,7 @@ class ProcessRoute {
         }
 
         if (codeError != 0)
-            res.sendStatus(codeError).end();
+            res.sendStatus(codeError);
         else
             next();
     };
@@ -89,11 +89,15 @@ class ProcessRoute {
 
                 }
             }
-            finalRoute = '/' + newRoute.join('/');
+            finalRoute = newRoute.join('/');
             if (routes.indexOf(finalRoute) == -1) {//verifica novamente se a rota existe no arquivo de rotas, caso não exista ele pegará uma rota que contem parametros opcionais
                 finalRoute = finalRoute.replace('/', '');
                 let rg = "(^\\/" + finalRoute + ")(\\/:\\w+\\?)+$";
-                finalRoute = routes.find(value => new RegExp(rg, 'g').test(value));
+                let routeParamsOptionals = routes.find(value => new RegExp(rg, 'g').test(value));
+                if(routeParamsOptionals != undefined)
+                    finalRoute = routeParamsOptionals;
+                else
+                    finalRoute = urlStr;
             }
         } else {
             finalRoute = urlStr;

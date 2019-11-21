@@ -30,7 +30,7 @@ export default class AuthenticatorManager {
         return sign(configToken, process.env.KEY_TOKEN);
     }
 
-    private chekCredencials(credencials, req) {
+    chekCredencials(credencials, req) {
         let retorno = 200;
         if (!credencials.permissions[req.path] || !credencials.permissions[req.path].find(k => k == req.method))
             retorno = 403;

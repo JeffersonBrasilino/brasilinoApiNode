@@ -1,3 +1,4 @@
 export let SendEmail = {
- "/":{"method":["POST"],"action":"index","auth":0},
+    "/": {"method": ["POST"], "action": "index", "auth": false},
+    "/sendEmailSignup": {"method": ["POST"], "action": "sendEmailSignup", "auth": false},
 };
