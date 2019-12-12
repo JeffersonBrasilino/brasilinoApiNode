@@ -6,7 +6,7 @@ export default class AuthenticatorManager {
         try {
             if (req.get('Authorization')) {
                 let tk = req.get('Authorization').replace(/[Bb]earer /, '');
-                let credencials = verify(tk, process.env.KEY_TOKEN);
+                let credencials = this.verifyToken(tk);
 
                 retorno = this.chekCredencials(credencials.data, req);
             } else {
@@ -36,5 +36,16 @@ export default class AuthenticatorManager {
             retorno = 403;
 
         return retorno
+    }
+
+    verifyToken(token: string){
+        let retorno = {ok: false, data:{}};
+        try{
+            retorno.ok = true;
+            retorno.data = verify(token, process.env.KEY_TOKEN);
+        }catch (e) {
+            retorno.ok = false;
+        }
+        return retorno;
     }
 }

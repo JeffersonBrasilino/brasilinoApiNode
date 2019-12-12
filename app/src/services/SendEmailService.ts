@@ -1,6 +1,4 @@
-//import SendEmail from "../../core/SendEmail";
-
-import AuthenticatorManager from "../../core/AuthenticatorManager";
+import SendEmail from "../../core/SendEmail";
 
 export default class SendEmailService {
 
@@ -10,9 +8,8 @@ export default class SendEmailService {
         //return await a.sendEmail(sendTo,subject,content);
     }
 
-    sendEmailSignup(sendTo:Array<string> ,subject:string,content:string, secret: string) {
-        const authenticator = new AuthenticatorManager();
-        /*const a = new SendEmail();
-        return await a.sendEmail(sendTo,subject,content);*/
+    sendEmailSignup(sendTo:Array<string> ,subject:string,content:string) {
+        const a = new SendEmail();
+        return a.sendEmail(sendTo,subject,content);
     }
 }
