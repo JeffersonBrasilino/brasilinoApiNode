@@ -89,7 +89,7 @@ class ProcessRoute {
 
                 }
             }
-            finalRoute = newRoute.join('/');
+            finalRoute = '/'+newRoute.join('/');
             if (routes.indexOf(finalRoute) == -1) {//verifica novamente se a rota existe no arquivo de rotas, caso não exista ele pegará uma rota que contem parametros opcionais
                 finalRoute = finalRoute.replace('/', '');
                 let rg = "(^\\/" + finalRoute + ")(\\/:\\w+\\?)+$";

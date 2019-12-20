@@ -31,4 +31,9 @@ export class AuthActions {
         res.status(retorno.code).send(retorno.data);
 
     }
+
+    activateUser = (req,res)=>{
+        let status = this.authService.activatedUser(req.params.userToken);
+        res.status(status.code).send();
+    }
 }

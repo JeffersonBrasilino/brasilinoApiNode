@@ -42,7 +42,7 @@ export default class AuthenticatorManager {
         let retorno = {ok: false, data:{}};
         try{
             retorno.ok = true;
-            retorno.data = verify(token, process.env.KEY_TOKEN);
+            retorno = Object.assign(retorno,verify(token, process.env.KEY_TOKEN));
         }catch (e) {
             retorno.ok = false;
         }

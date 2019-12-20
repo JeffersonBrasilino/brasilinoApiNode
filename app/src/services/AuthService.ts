@@ -2,6 +2,7 @@ import * as models from '../models/ExportModels';
 import md5 from 'md5';
 import AuthenticatorManager from '../../core/AuthenticatorManager';
 import DataValidator from "../../core/DataValidator";
+import {UsuariosModel} from "../models/ExportModels";
 //TODO: FAZER A TRANSACTION DO SEQUELIZE FUNCIONAR(DE ALGUMA FORMA).
 export default class AuthService {
 
@@ -57,6 +58,7 @@ export default class AuthService {
                     }
                 ]
             });
+
             if (userData) {
                 let objectToken = {'userId': userData.id};
                 let permissions = await models.RotasApiModel.findAll({
@@ -108,6 +110,27 @@ export default class AuthService {
             }
         } catch (e) {
             retorno = {code: 500, data: {}}; //server error;
+        }
+        return retorno;
+    }
+
+    activatedUser(userToken){
+        let retorno = {code:200};
+        try{
+            const authManager = new AuthenticatorManager();
+            let userData = authManager.verifyToken(userToken);
+            if(userData.ok == true){
+                UsuariosModel.update({status:1},{
+                    where:{
+                        //@ts-ignore
+                        id:userData.data.userId
+                    }
+                })
+            }else{
+                retorno.code = 403;
+            }
+        }catch (e) {
+            retorno.code = 500;
         }
         return retorno;
     }
