@@ -44,7 +44,7 @@ class GeneratorModel {
                                         underscored:true,
                                         modelName:'` + nameCamel + `'
                                 });\r\n` + foreignKeys.fkInstance;
-        //writeFileSync('./src/models/' + ClassName + '.ts', modelStr);
+        writeFileSync('./src/models/' + ClassName + '.ts', modelStr);
 
         //this.registerModel(nameCamel);
         console.log('concluido');
