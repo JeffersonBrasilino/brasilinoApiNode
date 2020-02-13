@@ -1,13 +1,19 @@
-import { writeFileSync, existsSync, appendFileSync } from 'fs';
-import { Sequelize } from 'sequelize';
+import {writeFileSync, existsSync, appendFileSync} from 'fs';
+import {Sequelize} from 'sequelize';
 import * as dotenv from 'dotenv';
+import {databases} from '../config/databases';
+
 class GeneratorModel {
+    private dbConfig: Object;
     private db: Sequelize;
+
     constructor(args) {
         dotenv.config();
-        this.db = new Sequelize(String(process.env.DB_HOST));
+        this.dbConfig = Object(databases[String(process.env.DB_HOST_DEV)]);
+        this.db = new Sequelize(this.dbConfig);
         this.createModel(args[2]);
     }
+
     createModel = async (nameTable) => {
         let modelName = this.convertSnakeToPascal(nameTable);
         if (!existsSync('./src/models/' + modelName + 'Model.ts')) {
@@ -27,28 +33,33 @@ class GeneratorModel {
         let ClassName = nameCamel + 'Model';
         let modelStr = `import { Model, DataTypes } from 'sequelize';
                             import Db from '../../core/conectionDatabase';
-                            `+ foreignKeys.fkImports + `
+                            ` + foreignKeys.fkImports + `
                              export class ` + ClassName + ` extends Model<` + ClassName + `>{
                                  //add especifcs methods here...
                                 }
-                                `+ ClassName + `.init(
+                                ` + ClassName + `.init(
                                     {` + colunms + `},
-                                    {sequelize:Db,
+                                    {sequelize:Db.getInstance(),
                                         tableName:'` + tableName.toLowerCase() + `',
                                         underscored:true,
-                                        name:{singular:'` + nameCamel + `',plural:'` + nameCamel + `'
-                                    }
-                                });\r\n`+ foreignKeys.fkInstance;
-         writeFileSync('./src/models/' + ClassName + '.ts', modelStr);
+                                        modelName:'` + nameCamel + `'
+                                });\r\n` + foreignKeys.fkInstance;
+        //writeFileSync('./src/models/' + ClassName + '.ts', modelStr);
 
-        this.registerModel(nameCamel);
+        //this.registerModel(nameCamel);
         console.log('concluido');
     }
 
+    // @ts_ignore
     private getInformationTable = (tableName) => {
         return new Promise((resolve, reject) => {
             try {
-                this.db.query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" + tableName.toLowerCase() + "' ").then((result) => { resolve(result) });
+                this.db.query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" + tableName.toLowerCase() + "' AND table_schema = '"+this.dbConfig['schema']+"'").then((result) => {
+                    if(result)
+                        resolve(result);
+                    else
+                        reject('a tabela nao existe');
+                });
             } catch (error) {
                 reject('nao foi possivel buscar os dados da tabela.')
             }
@@ -61,7 +72,7 @@ class GeneratorModel {
             let typeColunm = this.getTypeColunm(element);
             res += element.column_name + ":{type: new DataTypes." + typeColunm + ",";
             if (element.column_name == 'id')
-                res += "autoIncrement:true,primaryKey:true"
+                res += "autoIncrement:true,primaryKey:true";
             res += "},\r\n"
         });
 
@@ -70,7 +81,7 @@ class GeneratorModel {
 
     private getTypeColunm(element) {
         let type = String(element.data_type).toUpperCase();
-        if (type == 'TIMESTAMP WITHOUT TIME ZONE') type = 'DATE';
+        if (type == 'TIMESTAMP WITHOUT TIME ZONE' || type=='TIMESTAMP WITH TIME ZONE') type = 'DATE';
         if (type == 'CHAR' || type == 'CHARACTER' || type == 'CHARACTER VARYING') type = 'STRING';
 
         if (type == 'NUMERIC') type = 'FLOAT';
@@ -107,26 +118,26 @@ class GeneratorModel {
         JOIN information_schema.constraint_column_usage AS ccu
           ON ccu.constraint_name = tc.constraint_name
           AND ccu.table_schema = tc.table_schema
-    WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='` + tableName.toLowerCase() + "'");
-        let retorno = { fkInstance: '', fkImports: '' }
+    WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='` + tableName.toLowerCase() + "' AND tc.constraint_schema = '"+this.dbConfig['schema']+"'");
+        let retorno = {fkInstance: '', fkImports: ''};
         let fkImportsArr = <any>[];
         foreignKey[0].forEach(element => {
             let modelNameForeignKey = this.convertSnakeToPascal(element.foreign_table_name);
             let modelName = this.convertSnakeToPascal(tableName) + 'Model';
             if (existsSync('./src/models/' + modelNameForeignKey + 'Model.ts')) {
-                fkImportsArr.push(modelNameForeignKey+'Model');
+                fkImportsArr.push(modelNameForeignKey + 'Model');
                 retorno.fkInstance += modelNameForeignKey + `Model.hasMany(` + modelName + `,{foreignKey:'` + element.column_name + `'});\r\n` + modelName + `.belongsTo(` + modelNameForeignKey + `Model,{foreignKey:'` + element.column_name + `'});\r\n`;
-            }else{
-                console.log('existem chaves estrangeiras para a tabela '+element.foreign_table_name+', e nao ha model gerado para a tabela. gere o model da tabela '+element.foreign_table_name+' adicione o relacionamento manualmente no model '+modelName);
+            } else {
+                console.log('existem chaves estrangeiras para a tabela ' + element.foreign_table_name + ', e nao ha model gerado para a tabela. gere o model da tabela ' + element.foreign_table_name + ' adicione o relacionamento manualmente no model ' + modelName);
             }
         });
-        retorno.fkImports = `import {`+fkImportsArr.join()+`} from ` + `'./ExportModels';\r\n`
+        retorno.fkImports = `import {` + fkImportsArr.join() + `} from ` + `'./ExportModels';\r\n`;
         return retorno;
     }
 
-    registerModel = (modelName)=>{
+    registerModel = (modelName) => {
         console.log('registrando o model...');
-        appendFileSync('./src/models/ExportModels.ts','\r\nexport {'+modelName+'Model} from "./'+modelName+'Model";');
+        appendFileSync('./src/models/ExportModels.ts', '\r\nexport {' + modelName + 'Model} from "./' + modelName + 'Model";');
     }
 }
 

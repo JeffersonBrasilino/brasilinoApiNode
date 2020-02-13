@@ -7,6 +7,7 @@ export const databases = {
         password: "",
         database: "",
         dialect: "",
+        schema:"",
         dialectOptions: {
             ssl: true
         },
