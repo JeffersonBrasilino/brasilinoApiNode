@@ -1,3 +1,4 @@
+//COMANDO PRA RODAR npx ts-node generator/model.ts [NOME DA TABELA]
 import {writeFileSync, existsSync, appendFileSync} from 'fs';
 import {Sequelize} from 'sequelize';
 import * as dotenv from 'dotenv';
@@ -15,15 +16,22 @@ class GeneratorModel {
     }
 
     createModel = async (nameTable) => {
+        let existsTable = await this.db.query(`SELECT EXISTS (
+                                                   SELECT FROM information_schema.tables 
+                                                   WHERE  table_schema = '${this.dbConfig['schema']}'
+                                                   AND    table_name   = '${nameTable}'
+                                                )`
+        );
         let modelName = this.convertSnakeToPascal(nameTable);
-        if (!existsSync('./src/models/' + modelName + 'Model.ts')) {
+        if (existsSync('./src/models/' + modelName + 'Model.ts')) {
+            console.log('o model ja existe.');
+        } else if(existsTable[0][0].exists == false) {
+            console.log('a tabela nao existe.');
+        } else{
             console.log('gerando model...');
             this.writeModelFile(nameTable);
-        } else {
-            console.log('o model ja existe.')
         }
-        ;
-    }
+    };
 
     private writeModelFile = async (tableName) => {
         let informationColunmsTable = await this.getInformationTable(tableName);
@@ -46,7 +54,7 @@ class GeneratorModel {
                                 });\r\n` + foreignKeys.fkInstance;
         writeFileSync('./src/models/' + ClassName + '.ts', modelStr);
 
-        //this.registerModel(nameCamel);
+        this.registerModel(nameCamel);
         console.log('concluido');
     }
 
@@ -54,8 +62,8 @@ class GeneratorModel {
     private getInformationTable = (tableName) => {
         return new Promise((resolve, reject) => {
             try {
-                this.db.query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" + tableName.toLowerCase() + "' AND table_schema = '"+this.dbConfig['schema']+"'").then((result) => {
-                    if(result)
+                this.db.query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" + tableName.toLowerCase() + "' AND table_schema = '" + this.dbConfig['schema'] + "'").then((result) => {
+                    if (result)
                         resolve(result);
                     else
                         reject('a tabela nao existe');
@@ -81,7 +89,7 @@ class GeneratorModel {
 
     private getTypeColunm(element) {
         let type = String(element.data_type).toUpperCase();
-        if (type == 'TIMESTAMP WITHOUT TIME ZONE' || type=='TIMESTAMP WITH TIME ZONE') type = 'DATE';
+        if (type == 'TIMESTAMP WITHOUT TIME ZONE' || type == 'TIMESTAMP WITH TIME ZONE') type = 'DATE';
         if (type == 'CHAR' || type == 'CHARACTER' || type == 'CHARACTER VARYING') type = 'STRING';
 
         if (type == 'NUMERIC') type = 'FLOAT';
@@ -118,26 +126,30 @@ class GeneratorModel {
         JOIN information_schema.constraint_column_usage AS ccu
           ON ccu.constraint_name = tc.constraint_name
           AND ccu.table_schema = tc.table_schema
-    WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='` + tableName.toLowerCase() + "' AND tc.constraint_schema = '"+this.dbConfig['schema']+"'");
+    WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='` + tableName.toLowerCase() + "' AND tc.constraint_schema = '" + this.dbConfig['schema'] + "'");
         let retorno = {fkInstance: '', fkImports: ''};
         let fkImportsArr = <any>[];
-        foreignKey[0].forEach(element => {
-            let modelNameForeignKey = this.convertSnakeToPascal(element.foreign_table_name);
-            let modelName = this.convertSnakeToPascal(tableName) + 'Model';
-            if (existsSync('./src/models/' + modelNameForeignKey + 'Model.ts')) {
-                fkImportsArr.push(modelNameForeignKey + 'Model');
-                retorno.fkInstance += modelNameForeignKey + `Model.hasMany(` + modelName + `,{foreignKey:'` + element.column_name + `'});\r\n` + modelName + `.belongsTo(` + modelNameForeignKey + `Model,{foreignKey:'` + element.column_name + `'});\r\n`;
-            } else {
-                console.log('existem chaves estrangeiras para a tabela ' + element.foreign_table_name + ', e nao ha model gerado para a tabela. gere o model da tabela ' + element.foreign_table_name + ' adicione o relacionamento manualmente no model ' + modelName);
-            }
-        });
-        retorno.fkImports = `import {` + fkImportsArr.join() + `} from ` + `'./ExportModels';\r\n`;
+        if (foreignKey[0].length > 0) {
+
+            foreignKey[0].forEach(element => {
+                let modelNameForeignKey = this.convertSnakeToPascal(element.foreign_table_name);
+                let modelName = this.convertSnakeToPascal(tableName) + 'Model';
+                if (existsSync('./src/models/' + modelNameForeignKey + 'Model.ts')) {
+                    fkImportsArr.push(modelNameForeignKey + 'Model');
+                    retorno.fkInstance += modelNameForeignKey + `Model.hasMany(` + modelName + `,{foreignKey:'` + element.column_name + `'});\r\n` + modelName + `.belongsTo(` + modelNameForeignKey + `Model,{foreignKey:'` + element.column_name + `'});\r\n`;
+                } else {
+                    console.log('existem chaves estrangeiras para a tabela ' + element.foreign_table_name + ', e nao ha model gerado para a tabela. gere o model da tabela ' + element.foreign_table_name + ' adicione o relacionamento manualmente no model ' + modelName);
+                }
+            });
+
+            retorno.fkImports = `import {` + fkImportsArr.join() + `} from ` + `'./Models';\r\n`;
+        }
         return retorno;
     }
 
     registerModel = (modelName) => {
         console.log('registrando o model...');
-        appendFileSync('./src/models/ExportModels.ts', '\r\nexport {' + modelName + 'Model} from "./' + modelName + 'Model";');
+        appendFileSync('./src/models/Models.ts', '\r\nexport {' + modelName + 'Model} from "./' + modelName + 'Model";');
     }
 }
 
